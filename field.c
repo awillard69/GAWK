@@ -682,10 +682,13 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 	/* because it will be destroyed now: */
 	*end = fschar;	/* sentinel character */
 
-	for (; nf < up_to;) {
+	for (; nf < up_to;) 
+	{
 		field = scan;
+		oldfschar = fschar;
 #ifdef MBS_SUPPORT
-		if (gawk_mb_cur_max > 1) {
+		if (gawk_mb_cur_max > 1) 
+		{
 			while (*scan != fschar) {
 				mbclen = mbrlen(scan, end-scan, &mbs);
 				if ((mbclen == 1) || (mbclen == (size_t) -1)
@@ -693,38 +696,67 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 					/* We treat it as a singlebyte character.  */
 					mbclen = 1;
 				}
+				// if we found a field delimiter and we found a encapsulating delimiter (FSE)
+				if( embeddelim != '\0' && *scan == embeddelim )
+				{
+					// must move field to account for the current FSE
+					field++;
+					fschar = embeddelim; // set this to embed to look for it
+				}
 				scan += mbclen;
 			}
-		} else
-#endif
-		oldfschar = fschar;
-		while( *scan != fschar )
-		{
-			// if we found a field delimiter and we found a encapsulating delimiter (FSE)
-			if( embeddelim != '\0' && *scan == embeddelim )
+			// now, if we needed the closing embedded delimiter
+			// set this back to the desired character
+			if( embeddelim != '\0' && fschar == embeddelim )
 			{
-				// must move field to account for the current FSE
-				field++;
-				fschar = embeddelim; // set this to embed to look for it
+				fschar = oldfschar;
+				while( *scan != fschar )
+				{
+					mbclen = mbrlen(scan, end-scan, &mbs);
+					if ((mbclen == 1) || (mbclen == (size_t) -1)
+						|| (mbclen == (size_t) -2) || (mbclen == 0)) {
+						/* We treat it as a singlebyte character.  */
+						mbclen = 1;
+					}
+					scan += mbclen;
+				}
+				offset_idx = -1;
 			}
-			scan++;
-		}
-		// now, if we needed the closing embedded delimiter
-		// set this back to the desired character
-		if( embeddelim != '\0' && fschar == embeddelim )
+			else
+			{
+				offset_idx = 0;
+			}
+		} 
+		else 
+#endif
 		{
-			fschar = oldfschar;
 			while( *scan != fschar )
 			{
+				// if we found a field delimiter and we found a encapsulating delimiter (FSE)
+				if( embeddelim != '\0' && *scan == embeddelim )
+				{
+					// must move field to account for the current FSE
+					field++;
+					fschar = embeddelim; // set this to embed to look for it
+				}
 				scan++;
 			}
-			offset_idx = -1;
+			// now, if we needed the closing embedded delimiter
+			// set this back to the desired character
+			if( embeddelim != '\0' && fschar == embeddelim )
+			{
+				fschar = oldfschar;
+				while( *scan != fschar )
+				{
+					scan++;
+				}
+				offset_idx = -1;
+			}
+			else
+			{
+				offset_idx = 0;
+			}
 		}
-		else
-		{
-			offset_idx = 0;
-		}
-
 		(*set)(++nf, field, (long)( (scan + offset_idx)  - field), n, NULL);
 
 		if (scan == end)

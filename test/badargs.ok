@@ -4,6 +4,7 @@ Usage: gawk [POSIX or GNU style options] [--] 'program' file ...
 POSIX options:		GNU long options:
 	-f progfile		--file=progfile
 	-F fs			--field-separator=fs
+	-F fse			--field-separator-enclosure=fse
 	-v var=val		--assign=var=val
 	-m[fr] val
 	-O			--optimize

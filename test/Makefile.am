@@ -204,6 +204,12 @@ EXTRA_DIST = \
 	fsfwfs.awk \
 	fsfwfs.in \
 	fsfwfs.ok \
+	fsembed.awk \
+	fsembed.in \
+	fsembed.ok \
+	fsembedp.awk \
+	fsembedp.in \
+	fsembedp.ok \
 	fsrs.awk \
 	fsrs.in \
 	fsrs.ok \
@@ -712,7 +718,7 @@ UNIX_TESTS = fflush getlnhd localenl pid pipeio1 pipeio2 poundbang space strftln
 
 GAWK_EXT_TESTS = \
 	argtest backw badargs binmode1 clos1way devfd devfd1 devfd2 fieldwdth \
-	fsfwfs funlen fwtest fwtest2 gensub gensub2 getlndir gnuops2 gnuops3 \
+	fsembed fsembedp fsfwfs funlen fwtest fwtest2 gensub gensub2 getlndir gnuops2 gnuops3 \
 	gnureops icasefs icasers igncdym igncfs ignrcas2 ignrcase lint lintold \
 	manyfiles match1 match2 match3 mbprintf3 mbstr1 nondec nondec2 posix \
 	printfbad1 printfbad2 procinfs rebuf regx8bit reint reint2 rsstart1 \
@@ -1133,6 +1139,16 @@ subamp::
 exitval1::
 	@echo $@
 	@$(AWK) -f $(srcdir)/exitval1.awk >_$@ 2>&1; echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+fsembed:
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+fsembedp:
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) -E "\"" -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 fsspcoln::

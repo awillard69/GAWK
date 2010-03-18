@@ -538,6 +538,7 @@ tree_eval(register NODE *tree)
 	case Node_OFMT:
 	case Node_OFS:
 	case Node_ORS:
+	case Node_FSE:
 	case Node_RS:
 	case Node_TEXTDOMAIN:
 	case Node_SUBSEP:
@@ -798,6 +799,7 @@ pp_lhs(register NODE *ptr)
 	case Node_OFMT:
 	case Node_OFS:
 	case Node_ORS:
+	case Node_FSE:
 	case Node_RS:
 	case Node_SUBSEP:
 	case Node_TEXTDOMAIN:
@@ -1475,6 +1477,10 @@ pp_var(NODE *tree)
 	case Node_OFMT:
 		fprintf(prof_fp, "OFMT");
 		return;
+
+	case Node_FSE:
+		fprintf(prof_fp, "FSE");
+		break;
 
 	case Node_OFS:
 		fprintf(prof_fp, "OFS");

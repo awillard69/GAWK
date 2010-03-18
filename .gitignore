@@ -1,3 +1,4 @@
+*.[ao]
 .deps/
 Makefile
 awklib/.deps/
@@ -23,4 +24,25 @@ po/Makefile.in
 po/POTFILES
 stamp-h1
 test/Makefile
+autom4te.cache/
+awklib/grcat
+awklib/group.awk
+awklib/igawk
+awklib/passwd.awk
+awklib/pwcat
+gawk
+libsigsegv/src/.libs/
+libsigsegv/src/dispatcher.lo
+libsigsegv/src/handler.lo
+libsigsegv/src/leave.lo
+libsigsegv/src/libsigsegv.la
+libsigsegv/src/stackvma.lo
+libsigsegv/src/version.lo
+libsigsegv/tests/sigsegv1
+libsigsegv/tests/sigsegv2
+libsigsegv/tests/sigsegv3
+libsigsegv/tests/stackoverflow1
+libsigsegv/tests/stackoverflow2
+pgawk
+test/fmtspcl.ok
 

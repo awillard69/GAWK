@@ -36,26 +36,26 @@ is_blank(int c)
 	return c == ' ' || c == '\t';
 }
 
-typedef void (* Setfunc) P((long, char *, long, NODE *));
+typedef void (* Setfunc) P((long, char *, long, NODE *, NODE *));
 
 static long (*parse_field) P((long, char **, int, NODE *,
-			     Regexp *, Setfunc, NODE *, int));
+			     Regexp *, Setfunc, NODE *, int, NODE *));
 static void rebuild_record P((void));
 static long re_parse_field P((long, char **, int, NODE *,
-			     Regexp *, Setfunc, NODE *, int));
+			     Regexp *, Setfunc, NODE *, int, NODE *));
 static long def_parse_field P((long, char **, int, NODE *,
-			      Regexp *, Setfunc, NODE *, int));
+			      Regexp *, Setfunc, NODE *, int, NODE *));
 static long posix_def_parse_field P((long, char **, int, NODE *,
-			      Regexp *, Setfunc, NODE *, int));
+			      Regexp *, Setfunc, NODE *, int, NODE *));
 static long null_parse_field P((long, char **, int, NODE *,
-			     Regexp *, Setfunc, NODE *, int));
+			     Regexp *, Setfunc, NODE *, int, NODE *));
 static long sc_parse_field P((long, char **, int, NODE *,
-			     Regexp *, Setfunc, NODE *, int));
+			     Regexp *, Setfunc, NODE *, int, NODE *));
 static long fw_parse_field P((long, char **, int, NODE *,
-			     Regexp *, Setfunc, NODE *, int));
-static void set_element P((long num, char * str, long len, NODE *arr));
+			     Regexp *, Setfunc, NODE *, int, NODE *));
+static void set_element P((long num, char * str, long len, NODE *arr, NODE *dummy));
 static void grow_fields_arr P((long num));
-static void set_field P((long num, char *str, long len, NODE *dummy));
+static void set_field P((long num, char *str, long len, NODE *dummy, NODE *dummy2));
 static void update_PROCINFO P((char *subscript, char *str));
 
 
@@ -75,6 +75,8 @@ Regexp *FS_re_yes_case = NULL;
 Regexp *FS_re_no_case = NULL;
 Regexp *FS_regexp = NULL;
 NODE *Null_field = NULL;
+
+NODE *fse_node = NULL; /* default FSE pointer node */
 
 /* using_FIELDWIDTHS --- static function, macro to avoid overhead */
 #define using_FIELDWIDTHS()	(parse_field == fw_parse_field)
@@ -119,7 +121,8 @@ static void
 set_field(long num,
 	char *str,
 	long len,
-	NODE *dummy ATTRIBUTE_UNUSED)	/* just to make interface same as set_element */
+	NODE *dummy ATTRIBUTE_UNUSED,	/* just to make interface same as set_element */
+	NODE *dummy1 ATTRIBUTE_UNUSED) /* just to make interface same as set_element */
 {
 	register NODE *n;
 
@@ -365,7 +368,8 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 	Regexp *rp,
 	Setfunc set,	/* routine to set the value of the parsed field */
 	NODE *n,
-	int in_middle)
+	int in_middle,
+	NODE *fse ATTRIBUTE_UNUSED) /* embedded delimiter, not needed here */
 {
 	register char *scan = *buf;
 	register long nf = parse_high_water;
@@ -409,21 +413,21 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 #endif
 			scan++;
 			if (scan == end) {
-				(*set)(++nf, field, (long)(scan - field), n);
+				(*set)(++nf, field, (long)(scan - field), n, NULL);
 				up_to = nf;
 				break;
 			}
 			continue;
 		}
 		(*set)(++nf, field,
-		       (long)(scan + RESTART(rp, scan) - field), n);
+		       (long)(scan + RESTART(rp, scan) - field), n, NULL);
 		scan += REEND(rp, scan);
 		field = scan;
 		if (scan == end)	/* FS at end of record */
-			(*set)(++nf, field, 0L, n);
+			(*set)(++nf, field, 0L, n, NULL);
 	}
 	if (nf != up_to && scan < end) {
-		(*set)(++nf, scan, (long)(end - scan), n);
+		(*set)(++nf, scan, (long)(end - scan), n, NULL);
 		scan = end;
 	}
 	*buf = scan;
@@ -446,7 +450,8 @@ def_parse_field(long up_to,	/* parse only up to this field number */
 	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
 	NODE *n,
-	int in_middle ATTRIBUTE_UNUSED)
+	int in_middle ATTRIBUTE_UNUSED,
+	NODE *fse ATTRIBUTE_UNUSED ) /* embedded delimieter, not neededhere */
 {
 	register char *scan = *buf;
 	register long nf = parse_high_water;
@@ -464,7 +469,7 @@ def_parse_field(long up_to,	/* parse only up to this field number */
 	 * as first field. This is not worth a separate function.
 	 */
 	if (fs->stlen == 0) {
-		(*set)(++nf, *buf, len, n);
+		(*set)(++nf, *buf, len, n, NULL);
 		*buf += len;
 		return nf;
 	}
@@ -485,7 +490,7 @@ def_parse_field(long up_to,	/* parse only up to this field number */
 		field = scan;
 		while (*scan != ' ' && *scan != '\t' && *scan != '\n')
 			scan++;
-		(*set)(++nf, field, (long)(scan - field), n);
+		(*set)(++nf, field, (long)(scan - field), n, NULL);
 		if (scan == end)
 			break;
 	}
@@ -514,7 +519,8 @@ posix_def_parse_field(long up_to,	/* parse only up to this field number */
 	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
 	NODE *n,
-	int in_middle ATTRIBUTE_UNUSED)
+	int in_middle ATTRIBUTE_UNUSED,
+	NODE *fse ATTRIBUTE_UNUSED) /* embedded delimitr, not needed here */
 {
 	register char *scan = *buf;
 	register long nf = parse_high_water;
@@ -532,7 +538,7 @@ posix_def_parse_field(long up_to,	/* parse only up to this field number */
 	 * as first field. This is not worth a separate function.
 	 */
 	if (fs->stlen == 0) {
-		(*set)(++nf, *buf, len, n);
+		(*set)(++nf, *buf, len, n, NULL);
 		*buf += len;
 		return nf;
 	}
@@ -553,7 +559,7 @@ posix_def_parse_field(long up_to,	/* parse only up to this field number */
 		field = scan;
 		while (*scan != ' ' && *scan != '\t')
 			scan++;
-		(*set)(++nf, field, (long)(scan - field), n);
+		(*set)(++nf, field, (long)(scan - field), n, NULL);
 		if (scan == end)
 			break;
 	}
@@ -579,7 +585,8 @@ null_parse_field(long up_to,	/* parse only up to this field number */
 	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
 	NODE *n,
-	int in_middle ATTRIBUTE_UNUSED)
+	int in_middle ATTRIBUTE_UNUSED,
+	NODE *fse ATTRIBUTE_UNUSED) /* embedded delimiter, not needed here */
 {
 	register char *scan = *buf;
 	register long nf = parse_high_water;
@@ -601,13 +608,13 @@ null_parse_field(long up_to,	/* parse only up to this field number */
 				/* We treat it as a singlebyte character.  */
 				mbclen = 1;
 			}
-			(*set)(++nf, scan, mbclen, n);
+			(*set)(++nf, scan, mbclen, n, NULL);
 			scan += mbclen;
 		}
 	} else
 #endif
 	for (; nf < up_to && scan < end; scan++)
-		(*set)(++nf, scan, 1L, n);
+		(*set)(++nf, scan, 1L, n, NULL);
 
 	*buf = scan;
 	return nf;
@@ -628,7 +635,8 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
 	NODE *n,
-	int in_middle ATTRIBUTE_UNUSED)
+	int in_middle ATTRIBUTE_UNUSED,
+	NODE *fse) /* embedded delimiter, not needed here */
 {
 	register char *scan = *buf;
 	register char fschar;
@@ -636,6 +644,12 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 	register char *field;
 	register char *end = scan + len;
 	char sav;
+
+	register char embeddelim = '\0'; // set this to empty for now.
+
+	int offset_idx = 0; // this is used to offset a trailinit delimiter.
+	char oldfschar = fschar; // save this off in case we change it
+
 #ifdef MBS_SUPPORT
 	size_t mbclen = 0;
 	mbstate_t mbs;
@@ -652,6 +666,16 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 		fschar = '\n';
 	else
 		fschar = fs->stptr[0];
+
+	// default this to nothing so it won't process
+	if( fse == NULL || fse->var_value->stlen == 0 )
+	{
+		//embeddelim = '\0';
+	}
+	else
+	{
+		embeddelim = fse->var_value->stptr[0];
+	}
 
 	/* before doing anything save the char at *end */
 	sav = *end;
@@ -673,14 +697,41 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 			}
 		} else
 #endif
-		while (*scan != fschar)
+		oldfschar = fschar;
+		while( *scan != fschar )
+		{
+			// if we found a field delimiter and we found a encapsulating delimiter (FSE)
+			if( embeddelim != '\0' && *scan == embeddelim )
+			{
+				// must move field to account for the current FSE
+				field++;
+				fschar = embeddelim; // set this to embed to look for it
+			}
 			scan++;
-		(*set)(++nf, field, (long)(scan - field), n);
+		}
+		// now, if we needed the closing embedded delimiter
+		// set this back to the desired character
+		if( embeddelim != '\0' && fschar == embeddelim )
+		{
+			fschar = oldfschar;
+			while( *scan != fschar )
+			{
+				scan++;
+			}
+			offset_idx = -1;
+		}
+		else
+		{
+			offset_idx = 0;
+		}
+
+		(*set)(++nf, field, (long)( (scan + offset_idx)  - field), n, NULL);
+
 		if (scan == end)
 			break;
 		scan++;
 		if (scan == end) {	/* FS at end of record */
-			(*set)(++nf, field, 0L, n);
+			(*set)(++nf, field, 0L, n, NULL);
 			break;
 		}
 	}
@@ -706,7 +757,8 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
 	NODE *n,
-	int in_middle ATTRIBUTE_UNUSED)
+	int in_middle ATTRIBUTE_UNUSED,
+	NODE *fse ATTRIBUTE_UNUSED) /* embedded delimiter, not needed here */
 {
 	register char *scan = *buf;
 	register long nf = parse_high_water;
@@ -748,7 +800,7 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 		    			++nmbc;
 				}
 	    		}
-			(*set)(++nf, scan, (long) mbslen, n);
+			(*set)(++nf, scan, (long) mbslen, n, NULL);
 			scan += mbslen;
 		}
 		else
@@ -756,7 +808,7 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 		{
 			if (len > end - scan)
 				len = end - scan;
-			(*set)(++nf, scan, (long) len, n);
+			(*set)(++nf, scan, (long) len, n, NULL);
 			scan += len;
 		}
 	}
@@ -787,7 +839,7 @@ get_field(register long requested, Func_ptr *assign)
 		    			fields_arr[0]->stlen -
 					(parse_extent - fields_arr[0]->stptr),
 		    			save_FS, FS_regexp, set_field,
-					(NODE *) NULL, in_middle);
+					(NODE *) NULL, in_middle, fse_node);
 				parse_high_water = NF;
 			}
 			rebuild_record();
@@ -816,7 +868,7 @@ get_field(register long requested, Func_ptr *assign)
 			in_middle = TRUE;
 		parse_high_water = (*parse_field)(requested, &parse_extent,
 		     fields_arr[0]->stlen - (parse_extent - fields_arr[0]->stptr),
-		     save_FS, FS_regexp, set_field, (NODE *) NULL, in_middle);
+		     save_FS, FS_regexp, set_field, (NODE *) NULL, in_middle, fse_node);
 
 		/*
 		 * if we reached the end of the record, set NF to the number of
@@ -848,7 +900,7 @@ get_field(register long requested, Func_ptr *assign)
 /* set_element --- set an array element, used by do_split() */
 
 static void
-set_element(long num, char *s, long len, NODE *n)
+set_element(long num, char *s, long len, NODE *n, NODE *dummy)
 {
 	register NODE *it;
 
@@ -863,9 +915,11 @@ NODE *
 do_split(NODE *tree)
 {
 	NODE *src, *arr, *sep, *fs, *src2, *fs2, *tmp;
+	NODE *fse = NULL, *fse2 = NULL;
+
 	char *s;
 	long (*parseit) P((long, char **, int, NODE *,
-			 Regexp *, Setfunc, NODE *, int));
+			 Regexp *, Setfunc, NODE *, int, NODE *));
 	Regexp *rp = NULL;
 
 	src = force_string(tree_eval(tree->lnode));
@@ -914,8 +968,10 @@ do_split(NODE *tree)
 					parseit = posix_def_parse_field;
 				else
 					parseit = def_parse_field;
-			} else
+			} else {
+				fse = FSE_node;
 				parseit = sc_parse_field;
+				}
 		} else {
 			parseit = re_parse_field;
 			rp = re_update(sep);
@@ -933,14 +989,24 @@ do_split(NODE *tree)
 
 	fs2 = dupnode(fs);
 	free_temp(fs);
+ 
+ 	if( fse != NULL )
+ 	{
+ 		fse2 = dupnode( fse );
+ 		free_temp( fse );
+ 	}
 
 	assoc_clear(arr);
 
 	s = src2->stptr;
 	tmp = tmp_number((AWKNUM) (*parseit)(UNLIMITED, &s, (int) src2->stlen,
-					     fs2, rp, set_element, arr, FALSE));
+					     fs2, rp, set_element, arr, FALSE, fse2));
 	unref(src2);
 	unref(fs2);
+	if( fse2 != NULL )
+	{
+		unref( fse2 );
+	}
 	return tmp;
 }
 
@@ -1077,6 +1143,7 @@ choose_fs_function:
 	buf[0] = '\0';
 	default_FS = FALSE;
 	fs = force_string(FS_node->var_value);
+	fse_node = NULL;
 
 	if (! do_traditional && fs->stlen == 0) {
 		static short warned = FALSE;
@@ -1116,8 +1183,10 @@ choose_fs_function:
 			else if (fs->stptr[0] == '\\')
 				/* same special case */
 				strcpy(buf, "[\\\\]");
-			else
+			else{
+				fse_node = FSE_node;
 				parse_field = sc_parse_field;
+			}
 		}
 	}
 	if (remake_re) {

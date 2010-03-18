@@ -479,6 +479,7 @@ typedef enum nodevals {
 	Node_OFMT,
 	Node_OFS,
 	Node_ORS,
+	Node_FSE,
 	Node_RS,
 	Node_TEXTDOMAIN,
 	Node_SUBSEP,
@@ -693,7 +694,7 @@ struct redirect {
  */
 struct src {
        enum srctype { CMDLINE = 1, SOURCEFILE,
-			PRE_ASSIGN, PRE_ASSIGN_FS } stype;
+			PRE_ASSIGN, PRE_ASSIGN_FS, PRE_ASSIGN_FSE } stype;
        char *val;
 };
 
@@ -734,6 +735,11 @@ extern char *OFS;
 extern int OFSlen;
 extern char *ORS;
 extern int ORSlen;
+
+// FS Embed
+extern char *FSE;
+extern int FSElen;
+
 extern char *OFMT;
 extern char *CONVFMT;
 ATTRIBUTE_EXPORTED extern int CONVFMTidx;
@@ -742,6 +748,7 @@ extern char *TEXTDOMAIN;
 extern NODE *BINMODE_node, *CONVFMT_node, *FIELDWIDTHS_node, *FILENAME_node;
 extern NODE *FNR_node, *FS_node, *IGNORECASE_node, *NF_node;
 extern NODE *NR_node, *OFMT_node, *OFS_node, *ORS_node, *RLENGTH_node;
+extern NODE *FSE_node;
 extern NODE *RSTART_node, *RS_node, *RT_node, *SUBSEP_node, *PROCINFO_node;
 extern NODE *LINT_node, *ERRNO_node, *TEXTDOMAIN_node;
 ATTRIBUTE_EXPORTED extern NODE **stack_ptr;
@@ -1064,6 +1071,7 @@ extern NODE **r_get_lhs P((NODE *ptr, Func_ptr *assign, int reference));
 extern void set_IGNORECASE P((void));
 extern void set_OFS P((void));
 extern void set_ORS P((void));
+extern void set_FSE P((void));
 extern void set_OFMT P((void));
 extern void set_CONVFMT P((void));
 extern void set_BINMODE P((void));

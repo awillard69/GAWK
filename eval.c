@@ -52,6 +52,7 @@ double _msc51bug;	/* to get around a bug in MSC 5.1 */
 NODE *ret_node;
 int OFSlen;
 int ORSlen;
+int FSElen;
 int OFMTidx;
 int CONVFMTidx;
 
@@ -352,6 +353,7 @@ static const char *const nodetypes[] = {
 	"Node_OFMT",
 	"Node_OFS",
 	"Node_ORS",
+	"Node_FSE"
 	"Node_RS",
 	"Node_SUBSEP",
 	"Node_TEXTDOMAIN",
@@ -1088,6 +1090,7 @@ r_tree_eval(register NODE *tree, int iscond)
 	case Node_IGNORECASE:
 	case Node_OFS:
 	case Node_ORS:
+	case Node_FSE:
 	case Node_OFMT:
 	case Node_CONVFMT:
 	case Node_BINMODE:
@@ -2101,6 +2104,12 @@ r_get_lhs(register NODE *ptr, Func_ptr *assign, int reference)
 			*assign = set_ORS;
 		break;
 
+	case Node_FSE:
+		aptr = &(FSE_node->var_value);
+		if (assign != NULL)
+			*assign = set_FSE;
+		break;
+
 	case Node_OFS:
 		aptr = &(OFS_node->var_value);
 		if (assign != NULL)
@@ -2341,7 +2350,17 @@ set_ORS()
 	ORSlen = ORS_node->var_value->stlen;
 	ORS[ORSlen] = '\0';
 }
-
+ 
+/* set_FSE --- update FSE related variables when FSE assigned to */
+ 
+void
+set_FSE()
+{
+ 	FSE = force_string(FSE_node->var_value)->stptr;
+ 	FSElen = FSE_node->var_value->stlen;
+	FSE[FSElen] = '\0';
+}
+ 
 /* fmt_ok --- is the conversion format a valid one? */
 
 NODE **fmt_list = NULL;

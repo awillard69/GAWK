@@ -53,6 +53,7 @@ static const char *varfile = DEFAULT_VARFILE;
 static void usage P((int exitval, FILE *fp)) ATTRIBUTE_NORETURN;
 static void copyleft P((void)) ATTRIBUTE_NORETURN;
 static void cmdline_fs P((char *str));
+static void cmdline_fse P((char *str));
 static void init_args P((int argc0, int argc, const char *argv0, char **argv));
 static void init_vars P((void));
 static NODE *load_environ P((void));
@@ -72,6 +73,7 @@ NODE *ENVIRON_node, *ERRNO_node, *FIELDWIDTHS_node, *FILENAME_node, *FNR_node;
 NODE *FS_node, *IGNORECASE_node, *NF_node, *NR_node, *OFMT_node, *OFS_node;
 NODE *ORS_node, *PROCINFO_node, *RLENGTH_node, *RSTART_node, *RS_node;
 NODE *RT_node, *SUBSEP_node, *LINT_node, *TEXTDOMAIN_node;
+NODE *FSE_node = NULL;
 
 long NF;
 long NR;
@@ -80,6 +82,7 @@ int BINMODE;
 int IGNORECASE;
 char *OFS;
 char *ORS;
+char *FSE;
 char *OFMT;
 char *TEXTDOMAIN;
 int MRL;	/* See -mr option for use of this variable */
@@ -196,6 +199,7 @@ static const struct option optab[] = {
 	{ "copyleft",		no_argument,		NULL,		'C' },
 	{ "copyright",		no_argument,		NULL,		'C' },
 	{ "field-separator",	required_argument,	NULL,		'F' },
+	{ "field-separatorenclosure",	required_argument,	NULL,		'E' },
 	{ "file",		required_argument,	NULL,		'f' },
 	{ "re-interval",	no_argument,		& do_intervals,	1 },
 	{ "source",		required_argument,	NULL,		's' },
@@ -225,7 +229,7 @@ main(int argc, char **argv)
 	int c;
 	char *scan;
 	/* the + on the front tells GNU getopt not to rearrange argv */
-	const char *optlist = "+F:f:v:W;m:DO";
+	const char *optlist = "+F:E:f:v:W;m:DO";
 	int stopped_early = FALSE;
 	int old_optind;
 	extern int optind;
@@ -335,6 +339,10 @@ main(int argc, char **argv)
 		switch (c) {
 		case 'F':
 			preassigns_add(PRE_ASSIGN_FS, optarg);
+			break;
+		
+		case 'E':
+			preassigns_add(PRE_ASSIGN_FSE, optarg);
 			break;
 
 		case 'S':
@@ -559,6 +567,8 @@ out:
 	for (i = 0; i <= numassigns; i++)
 		if (preassigns[i].stype == PRE_ASSIGN)
 			(void) arg_assign(preassigns[i].val, TRUE);
+		else if (preassigns[i].stype == PRE_ASSIGN_FSE)
+			cmdline_fse(preassigns[i].val);
 		else	/* PRE_ASSIGN_FS */
 			cmdline_fs(preassigns[i].val);
 	free(preassigns);
@@ -723,6 +733,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("POSIX options:\t\tGNU long options:\n"), fp);
 	fputs(_("\t-f progfile\t\t--file=progfile\n"), fp);
 	fputs(_("\t-F fs\t\t\t--field-separator=fs\n"), fp);
+	fputs(_("\t-F fse\t\t\t--field-separator-enclosure=fse\n"), fp);
 	fputs(_("\t-v var=val\t\t--assign=var=val\n"), fp);
 	fputs(_("\t-m[fr] val\n"), fp);
 	fputs(_("\t-O\t\t\t--optimize\n"), fp);
@@ -848,6 +859,20 @@ cmdline_fs(char *str)
 	set_FS();
 }
 
+/* cmdline_fse --- set FSE from the command line */
+static void
+cmdline_fse( char *str )
+{
+	NODE **tmp;
+
+	tmp = get_lhs( FSE_node, (Func_ptr *)0, FALSE );
+	unref( *tmp );
+	*tmp = make_str_node( str, strlen( str ), SCAN ); /* do process escapes */
+	
+	// TODO ajw: This may no longer be needed, along with distinct reference.
+	//set_FSE();
+}
+
 /* init_args --- set up ARGV from stuff on the command line */
 
 static void
@@ -901,6 +926,7 @@ static const struct varinit varinit[] = {
 {&FILENAME_node, "FILENAME",	Node_var,		"",	0,  NULL,	0 },
 {&FNR_node,	"FNR",		Node_FNR,		NULL,	0,  set_FNR,	0 },
 {&FS_node,	"FS",		Node_FS,		" ",	0,  NULL,	0 },
+{&FSE_node,	"FSE",		Node_FSE,		"\"",	0,  NULL,	0 },
 {&IGNORECASE_node, "IGNORECASE", Node_IGNORECASE,	NULL,	0,  NULL,	NON_STANDARD },
 {&LINT_node,	"LINT",		Node_LINT,		NULL,	0,  NULL,	NON_STANDARD },
 {&NF_node,	"NF",		Node_NF,		NULL,	-1, NULL,	0 },

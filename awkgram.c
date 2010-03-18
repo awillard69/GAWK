@@ -5859,6 +5859,7 @@ isnoeffect(NODETYPE type)
 	case Node_IGNORECASE:
 	case Node_OFS:
 	case Node_ORS:
+	case Node_FSE:
 	case Node_OFMT:
 	case Node_CONVFMT:
 	case Node_BINMODE:
@@ -5891,6 +5892,7 @@ isassignable(register NODE *n)
 	case Node_OFMT:
 	case Node_CONVFMT:
 	case Node_ORS:
+	case Node_FSE:
 	case Node_OFS:
 	case Node_LINT:
 	case Node_BINMODE:

@@ -733,7 +733,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("POSIX options:\t\tGNU long options:\n"), fp);
 	fputs(_("\t-f progfile\t\t--file=progfile\n"), fp);
 	fputs(_("\t-F fs\t\t\t--field-separator=fs\n"), fp);
-	fputs(_("\t-F fse\t\t\t--field-separator-enclosure=fse\n"), fp);
+	fputs(_("\t-E fse\t\t\t--field-separator-enclosure=fse\n"), fp);
 	fputs(_("\t-v var=val\t\t--assign=var=val\n"), fp);
 	fputs(_("\t-m[fr] val\n"), fp);
 	fputs(_("\t-O\t\t\t--optimize\n"), fp);

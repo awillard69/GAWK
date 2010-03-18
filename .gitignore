@@ -1,4 +1,6 @@
 *.[ao]
+configure
+*.in
 .deps/
 Makefile
 awklib/.deps/
@@ -45,4 +47,17 @@ libsigsegv/tests/stackoverflow1
 libsigsegv/tests/stackoverflow2
 pgawk
 test/fmtspcl.ok
-
+.libs/
+awklib/eg.old/
+awklib/grcat.exe
+awklib/pwcat.exe
+configh.in~
+gawk.exe
+libsigsegv/config.h.in~
+libsigsegv/tests/sigsegv1.exe
+libsigsegv/tests/sigsegv2.exe
+libsigsegv/tests/sigsegv3.exe
+libsigsegv/tests/stackoverflow1.exe
+libsigsegv/tests/stackoverflow2.exe
+pgawk.exe
+test/_*

@@ -933,7 +933,7 @@ static const struct varinit varinit[] = {
 {&FILENAME_node, "FILENAME",	Node_var,		"",	0,  NULL,	0 },
 {&FNR_node,	"FNR",		Node_FNR,		NULL,	0,  set_FNR,	0 },
 {&FS_node,	"FS",		Node_FS,		" ",	0,  NULL,	0 },
-{&FSE_node,	"FSE",		Node_FSE,		"\"",	0,  NULL,	0 },
+{&FSE_node,	"FSE",		Node_FSE,		"",	0,  NULL,	NON_STANDARD },
 {&IGNORECASE_node, "IGNORECASE", Node_IGNORECASE,	NULL,	0,  NULL,	NON_STANDARD },
 {&LINT_node,	"LINT",		Node_LINT,		NULL,	0,  NULL,	NON_STANDARD },
 {&NF_node,	"NF",		Node_NF,		NULL,	-1, NULL,	0 },

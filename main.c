@@ -279,9 +279,9 @@ main(int argc, char **argv)
 	setlocale(LC_NUMERIC, "");
 	init_locale(& loc);
 	setlocale(LC_NUMERIC, "C");
-#if defined(__CYGWIN__)
+#if defined(__CYGWIN171__)
 	// force this since Cygwin does not fully support locales
-	// manually adjust these values to support your local
+	// manually adjust these values to support your locale
 	loc.thousands_sep[0] = ',';
 	loc.grouping = strdup( (char [] ){0x3,0x3,0x0,0x0} );
 #endif

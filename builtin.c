@@ -3367,7 +3367,7 @@ mbc_byte_count(const char *ptr, size_t numchars)
 		return numchars;	/* no valid m.b. char */
 	for (; numchars > 0; numchars--) {
 		mb_len = mbrlen(ptr, numchars * gawk_mb_cur_max, &cur_state);
-#ifdef __CYGWIN__
+#ifdef __CYGWIN171__
 		// mbrlen is tied to LC_CTYPE which Cygwin has limited support
 		// may receive (-1) for invalid MB sequence on Cygwin
 		if( mb_len == -1 )
@@ -3408,7 +3408,7 @@ mbc_char_count(const char *ptr, size_t numbytes)
 
 	for (; numbytes > 0; numbytes--) {
 		mb_len = mbrlen(ptr, numbytes * gawk_mb_cur_max, &cur_state);
-#ifdef __CYGWIN__
+#ifdef __CYGWIN171__
 		// mbrlen is tied to LC_CTYPE which Cygwin has limited support
 		// may receive (-1) for invalid MB sequence on Cygwin
 		if( mb_len == -1 )

@@ -597,7 +597,7 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 PACKAGE_NAME='GNU Awk'
 PACKAGE_TARNAME='gawk'
 PACKAGE_VERSION='3.1.8'
-PACKAGE_STRING='GNU Awk 3.1.8'
+PACKAGE_STRING='GNU Awk 3.1.8a'
 PACKAGE_BUGREPORT='bug-gawk@gnu.org'
 
 # Factoring default headers for most tests.

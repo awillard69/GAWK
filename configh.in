@@ -45,9 +45,6 @@
    */
 #undef HAVE_DECL_TZNAME
 
-/* Define to 1 if you have the <dlfcn.h> header file. */
-#undef HAVE_DLFCN_H
-
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
 #undef HAVE_DOPRNT
 
@@ -109,6 +106,9 @@
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
 
+/* Define if you have the sigsegv library. */
+#undef HAVE_LIBSIGSEGV
+
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
@@ -168,9 +168,6 @@
 
 /* Define to 1 if you have the `setlocale' function. */
 #undef HAVE_SETLOCALE
-
-/* Define to 1 if you have the <signum.h> header file. */
-#undef HAVE_SIGNUM_H
 
 /* Define to 1 if you have the `snprintf' function. */
 #undef HAVE_SNPRINTF
@@ -293,6 +290,9 @@
 /* Define to 1 if the system has the type `unsigned long long int'. */
 #undef HAVE_UNSIGNED_LONG_LONG_INT
 
+/* Define to 1 if you have the `usleep' function. */
+#undef HAVE_USLEEP
+
 /* Define to 1 if you have the `vprintf' function. */
 #undef HAVE_VPRINTF
 
@@ -317,15 +317,8 @@
 /* systems should define this type here */
 #undef HAVE_WINT_T
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
-#undef LT_OBJDIR
-
 /* disable fatal errors on directories */
 #undef NO_DIRECTORY_FATAL
-
-/* disable use of libsigsegv */
-#undef NO_LIBSIGSEGV
 
 /* disable lint checks */
 #undef NO_LINT

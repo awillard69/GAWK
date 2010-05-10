@@ -164,7 +164,7 @@ static char builtin_func[] = "@builtin";
 
 
 /* Line 189 of yacc.c  */
-#line 168 "y.tab.c"
+#line 168 "awkgram.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -303,7 +303,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 307 "y.tab.c"
+#line 307 "awkgram.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -315,7 +315,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 319 "y.tab.c"
+#line 319 "awkgram.c"
 
 #ifdef short
 # undef short
@@ -3380,7 +3380,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 3384 "y.tab.c"
+#line 3384 "awkgram.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -4216,7 +4216,7 @@ allow_newline(void)
 		}
 		if (c == '\n')
 			sourceline++;
-		if (! ISSPACE(c)) {
+		if (! isspace(c)) {
 			pushback();
 			break;
 		}
@@ -4652,7 +4652,7 @@ retry:
 	case '.':
 		c = nextc();
 		pushback();
-		if (! ISDIGIT(c))
+		if (! isdigit(c))
 			return lasttok = '.';
 		else
 			c = '.';
@@ -4680,7 +4680,7 @@ retry:
 				if (tok == tokstart + 2) {
 					int peek = nextc();
 
-					if (ISXDIGIT(peek)) {
+					if (isxdigit(peek)) {
 						inhex = TRUE;
 						pushback();	/* following digit */
 					} else {
@@ -4709,7 +4709,7 @@ retry:
 				if ((c = nextc()) == '-' || c == '+') {
 					int c2 = nextc();
 
-					if (ISDIGIT(c2)) {
+					if (isdigit(c2)) {
 						tokadd(c);
 						tokadd(c2);
 					} else {
@@ -4717,7 +4717,7 @@ retry:
 						pushback();	/* + or - */
 						pushback();	/* e or E */
 					}
-				} else if (! ISDIGIT(c)) {
+				} else if (! isdigit(c)) {
 					pushback();	/* character after e or E */
 					pushback();	/* e or E */
 				} else {
@@ -4765,7 +4765,7 @@ retry:
 		tokadd('\0');
 		if (! do_traditional && isnondecimal(tokstart, FALSE)) {
 			if (do_lint) {
-				if (ISDIGIT(tokstart[1]))	/* not an 'x' or 'X' */
+				if (isdigit(tokstart[1]))	/* not an 'x' or 'X' */
 					lintwarn("numeric constant `%.*s' treated as octal",
 						(int) strlen(tokstart)-1, tokstart);
 				else if (tokstart[1] == 'x' || tokstart[1] == 'X')
@@ -4806,7 +4806,7 @@ retry:
 		}
 	}
 
-	if (c != '_' && ! ISALPHA(c)) {
+	if (c != '_' && ! isalpha(c)) {
 		yyerror(_("invalid char '%c' in expression"), c);
 		exit(EXIT_FAILURE);
 	}
@@ -5859,7 +5859,6 @@ isnoeffect(NODETYPE type)
 	case Node_IGNORECASE:
 	case Node_OFS:
 	case Node_ORS:
-	case Node_FSE:
 	case Node_OFMT:
 	case Node_CONVFMT:
 	case Node_BINMODE:
@@ -5892,7 +5891,6 @@ isassignable(register NODE *n)
 	case Node_OFMT:
 	case Node_CONVFMT:
 	case Node_ORS:
-	case Node_FSE:
 	case Node_OFS:
 	case Node_LINT:
 	case Node_BINMODE:
@@ -6127,7 +6125,7 @@ constant_fold(NODE *left, NODETYPE op, NODE *right)
 		return node(left, op, right);
 	}
 
-	/* String concatentation of two string cnstants */
+	/* String concatentation of two string constants */
 	if (op == Node_concat
 	    && left->type == Node_val
 	    && (left->flags & (STRCUR|STRING)) != 0
@@ -6151,7 +6149,7 @@ constant_fold(NODE *left, NODETYPE op, NODE *right)
 	if (left->type != Node_val
 	    || (left->flags & (STRCUR|STRING)) != 0
 	    || right->type != Node_val
-	    || (left->flags & (STRCUR|STRING)) != 0) {
+	    || (right->flags & (STRCUR|STRING)) != 0) {
 		return node(left, op, right);
 	}
 
@@ -6181,6 +6179,8 @@ constant_fold(NODE *left, NODETYPE op, NODE *right)
 		result *= right->numbr;
 		break;
 	case Node_quotient:
+		if (right->numbr == 0)
+			fatal(_("division by zero attempted in `/'"));
 		result /= right->numbr;
 		break;
 	case Node_mod:
